@@ -1,0 +1,7 @@
+# List of blacklisted countries (use ISO 3166-1 alpha-2 codes)
+blacklisted-countries:
+  - RU
+  - IR
+  - CN
+Kick-message: '{ "text": "Sorry, players from your country are not allowed on this server.", "extra": [ { "text": "\n\nК сожалению, игроки из вашей страны не допускаются на этот сервер.", "color":
+  "white", "bold": true } ], "color": "white", "bold": true }'

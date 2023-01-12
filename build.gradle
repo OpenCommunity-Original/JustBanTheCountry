@@ -1,0 +1,60 @@
+plugins {
+    id "com.github.johnrengelman.shadow" version "7.1.1"
+    id 'java'
+}
+
+group 'org.opencommunity'
+version '1.0'
+jar.enabled = false;
+
+repositories {
+    mavenLocal();
+    mavenCentral()
+    maven {
+        url = 'https://repo.essentialsx.net/snapshots/'
+    }
+    maven {
+        url = "https://repo.essentialsx.net/releases/"
+    }
+    maven {
+        url = "https://papermc.io/repo/repository/maven-public/"
+    }
+    maven {
+        url = 'https://oss.sonatype.org/content/repositories/snapshots'
+    }
+    maven {
+        url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
+    }
+    maven {
+        url = 'https://jitpack.io'
+    }
+    maven {
+        url = 'https://repo.aikar.co/content/groups/aikar/'
+    }
+    maven {
+        url = 'https://ci.ender.zone/plugin/repository/everything/'
+    }
+}
+
+dependencies {
+    compileOnly 'io.papermc.paper:paper-api:1.19.3-R0.1-SNAPSHOT'
+    compileOnly 'commons-io:commons-io:2.11.0'
+    compileOnly 'org.projectlombok:lombok:1.18.24'
+    annotationProcessor 'org.projectlombok:lombok:1.18.24'
+    compileOnly 'net.essentialsx:EssentialsX:2.20.0-SNAPSHOT'
+    compileOnly 'net.essentialsx:EssentialsXGeoIP:2.20.0-SNAPSHOT'
+}
+
+processResources {
+    filter { String line -> line.replace('${version}', project.version.toString()) }
+}
+
+shadowJar {
+    archiveFileName = 'JustBanTheCountry-' + project.version.toString() + '.jar';
+}
+
+artifacts {
+    shadowJar;
+}
+
+assemble.dependsOn(shadowJar);
