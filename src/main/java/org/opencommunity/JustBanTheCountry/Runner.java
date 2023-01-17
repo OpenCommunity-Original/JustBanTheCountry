@@ -42,7 +42,6 @@ public class Runner implements Listener {
                 // If the player is on the whitelist, allow the login
                 return;
             }
-
             // Look up the player's country using the EssentialsX geoip module
             String country = getPlayerCountry(playerName);
             // Check if the player's country is blacklisted
@@ -71,7 +70,7 @@ public class Runner implements Listener {
         String fullString = user.getGeoLocation();
         String[] parts = fullString.split(",");
 
-        return parts[parts.length-1].trim();
+        return parts[parts.length - 1].trim();
     }
 
     private boolean isPlayerBlacklisted(String name) throws SQLException {
