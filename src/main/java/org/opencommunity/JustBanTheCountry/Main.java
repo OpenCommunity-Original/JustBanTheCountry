@@ -17,7 +17,7 @@ import java.util.*;
 
 public class Main extends JavaPlugin {
     // SQLite connection
-    private Connection connection;
+    private Connection connection;// SQLite connection
 
     @Override
     public void onEnable() {
@@ -85,8 +85,6 @@ public class Main extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        saveConfig();
-
         // Close the SQLite connection
         try {
             if (connection != null && !connection.isClosed()) {

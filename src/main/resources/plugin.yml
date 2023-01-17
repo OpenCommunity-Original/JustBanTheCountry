@@ -2,7 +2,7 @@ name: JustBanTheCountry
 version: 1.0
 main: org.opencommunity.JustBanTheCountry.Main
 api-version: 1.19
-depend: [Essentials, EssentialsGeoIP]
+depend: [EssentialsGeoIP]
 
 authors: [Envel]
 description: Just Ban The Country

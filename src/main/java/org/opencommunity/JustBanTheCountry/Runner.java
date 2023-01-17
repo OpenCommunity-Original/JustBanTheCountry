@@ -43,13 +43,13 @@ public class Runner implements Listener {
                 return;
             }
 
-            // Look up the player's country code using the EssentialsX geoip module
-            String countryCode = getPlayerCountryCode(playerName);
+            // Look up the player's country using the EssentialsX geoip module
+            String country = getPlayerCountry(playerName);
             // TODO REMOVE
-            System.out.println("Get Country, what next? " + countryCode);
+            System.out.println("Get Country, what next? " + country);
 
             // Check if the player's country is blacklisted
-            if (blacklistedCountries.contains(countryCode)) {
+            if (blacklistedCountries.contains(country)) {
                 // Check if the player is on the blacklist for trying to login from a blacklisted country
                 if (isPlayerBlacklisted(playerName)) {
                     // If the player is on the blacklist, kick the player with a message
@@ -65,13 +65,16 @@ public class Runner implements Listener {
         }
     }
 
-    private String getPlayerCountryCode(@NotNull String player) {
+    private String getPlayerCountry(@NotNull String player) {
         // Look up the player's country using the EssentialsX geoip module
         Essentials essentials = (Essentials) Bukkit.getPluginManager().getPlugin("Essentials");
         assert essentials != null;
         User user = essentials.getUser(player);
-        // user.getGeoLocation().getCountryCode();
-        return user.getGeoLocation();
+
+        String fullString = user.getGeoLocation();
+        String[] parts = fullString.split(",");
+
+        return parts[parts.length-1].trim();
     }
 
     private boolean isPlayerBlacklisted(String name) throws SQLException {
