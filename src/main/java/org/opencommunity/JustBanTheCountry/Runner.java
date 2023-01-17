@@ -45,9 +45,6 @@ public class Runner implements Listener {
 
             // Look up the player's country using the EssentialsX geoip module
             String country = getPlayerCountry(playerName);
-            // TODO REMOVE
-            System.out.println("Get Country, what next? " + country);
-
             // Check if the player's country is blacklisted
             if (blacklistedCountries.contains(country)) {
                 // Check if the player is on the blacklist for trying to login from a blacklisted country
