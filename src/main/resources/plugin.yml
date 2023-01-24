@@ -1,5 +1,5 @@
 name: JustBanTheCountry
-version: 1.0
+version: '${version}'
 main: org.opencommunity.JustBanTheCountry.Main
 api-version: 1.19
 depend: [EssentialsGeoIP]

@@ -3,5 +3,4 @@ blacklisted-countries:
   - Russia
   - Iran
   - China
-Kick-message: '{ "text": "Sorry, players from your country are not allowed on this server.", "extra": [ { "text": "\n\nК сожалению, игроки из вашей страны не допускаются на этот сервер.", "color":
-  "white", "bold": true } ], "color": "white", "bold": true }'
+Kick-message: '{ "text": "Sorry, players from your country are not allowed on this server.", "extra": [ { "text": "\n\nК сожалению, игроки из вашей страны не допускаются на этот сервер.", "color": "white", "bold": true } ], "color": "white", "bold": true }'
