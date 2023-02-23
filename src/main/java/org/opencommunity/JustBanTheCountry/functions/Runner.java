@@ -73,11 +73,6 @@ public class Runner implements Listener {
         return parts[parts.length - 1].trim();
     }
 
-    private boolean isPlayerBlacklisted(String name) throws SQLException {
-        ResultSet resultSet = sqliteAPI.executeQuery("SELECT COUNT(*) FROM blacklist WHERE name = ?", name).join();
-        return resultSet.getInt(1) > 0;
-    }
-
     private void addPlayerToBlacklist(String name) throws SQLException {
         sqliteAPI.executeUpdate("INSERT INTO blacklist (name) VALUES (?)", name).join();
     }
@@ -91,7 +86,22 @@ public class Runner implements Listener {
     }
 
     public boolean isPlayerWhitelisted(String name) throws SQLException {
-        ResultSet resultSet = sqliteAPI.executeQuery("SELECT COUNT(*) FROM whitelist WHERE name = ?", name).join();
-        return resultSet.getInt(1) > 0;
+        ResultSet resultSet = sqliteAPI.executeQuery("SELECT COUNT(*) FROM whitelist WHERE name = ?", name).join();;
+        boolean isWhitelisted = false;
+        if (resultSet.next()) {
+            isWhitelisted = resultSet.getInt(1) > 0;
+        }
+        resultSet.close();
+        return isWhitelisted;
+    }
+
+    public boolean isPlayerBlacklisted(String name) throws SQLException {
+        ResultSet resultSet = sqliteAPI.executeQuery("SELECT COUNT(*) FROM blacklist WHERE name = ?", name).join();;
+        boolean isBlacklisted = false;
+        if (resultSet.next()) {
+            isBlacklisted = resultSet.getInt(1) > 0;
+        }
+        resultSet.close();
+        return isBlacklisted;
     }
 }
