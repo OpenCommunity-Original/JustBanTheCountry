@@ -50,11 +50,8 @@ public class WhitelistCommand implements CommandExecutor, TabCompleter {
                     sender.sendMessage("Player added.");
                 } else
                     sender.sendMessage("The player is already on the whitelist.");
-            } catch (SQLException e) {
-                sender.sendMessage("Error adding player to : " + e.getMessage());
-            } catch (ExecutionException e) {
-                throw new RuntimeException(e);
-            } catch (InterruptedException e) {
+            } catch (SQLException | ExecutionException | InterruptedException e) {
+                sender.sendMessage("Error adding player.");
                 throw new RuntimeException(e);
             }
             return true;
@@ -76,11 +73,8 @@ public class WhitelistCommand implements CommandExecutor, TabCompleter {
                     sender.sendMessage("Player removed.");
                 } else
                     sender.sendMessage("The player is not on the whitelist.");
-            } catch (SQLException e) {
-                sender.sendMessage("Error removing player from : " + e.getMessage());
-            } catch (ExecutionException e) {
-                throw new RuntimeException(e);
-            } catch (InterruptedException e) {
+            } catch (SQLException | ExecutionException | InterruptedException e) {
+                sender.sendMessage("Error removing player.");
                 throw new RuntimeException(e);
             }
             return true;

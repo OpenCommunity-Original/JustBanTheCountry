@@ -22,7 +22,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
 public class Runner implements Listener {
-    private Set<String> blacklistedCountries = new HashSet<>();
+    private final Set<String> blacklistedCountries;
     private static SQLiteAPI sqliteAPI;
     private static final Logger logger = Logger.getLogger("JustBanTheCountry");
 
@@ -38,6 +38,8 @@ public class Runner implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerLogin(AsyncPlayerPreLoginEvent event) {
         @NotNull String playerName = event.getName();
+        @NotNull String playerUUID = String.valueOf(event.getUniqueId());
+
         try {
             // Check if the player is on the whitelist
             if (isPlayerWhitelisted(playerName)) {
@@ -47,22 +49,18 @@ public class Runner implements Listener {
             // Look up the player's country using the EssentialsX geoip module
             String country = getPlayerCountry(playerName);
             // Check if the player is on the blacklist for trying to login from a blacklisted country
-            if (isPlayerBlacklisted(playerName)) {
+            if (isPlayerBlacklisted(playerUUID)) {
                 // If the player is on the blacklist, kick the player with a message
                 event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, kickMessage);
             }
             // Check if the player's country is blacklisted
             else if (country != null && blacklistedCountries.contains(country)) {
                 // If the player is not on the blacklist, add them to the blacklist and kick them with a message
-                addPlayerToBlacklist(playerName);
+                addPlayerToBlacklist(playerUUID);
                 event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, kickMessage);
             }
-        } catch (SQLException e) {
+        } catch (SQLException | ExecutionException | InterruptedException e) {
             logger.warning("Error checking whitelist and blacklist for player " + playerName + ": " + e.getMessage());
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
         }
     }
 
