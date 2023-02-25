@@ -16,15 +16,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class WhitelistCommand implements CommandExecutor, TabCompleter {
 
-    private final Configuration config;
     private static SQLiteAPI sqliteAPI;
 
     public WhitelistCommand(Configuration config, SQLiteAPI sqliteAPI) {
-        this.config = config;
-        this.sqliteAPI = sqliteAPI;
+        WhitelistCommand.sqliteAPI = sqliteAPI;
     }
 
     @Override
@@ -46,10 +45,17 @@ public class WhitelistCommand implements CommandExecutor, TabCompleter {
             }
             // Add the player
             try {
-                Runner.addPlayer(args[1]);
-                sender.sendMessage("Player added.");
+                if (!Runner.isPlayerWhitelisted(args[1])) {
+                    Runner.addPlayer(args[1]);
+                    sender.sendMessage("Player added.");
+                } else
+                    sender.sendMessage("The player is already on the whitelist.");
             } catch (SQLException e) {
                 sender.sendMessage("Error adding player to : " + e.getMessage());
+            } catch (ExecutionException e) {
+                throw new RuntimeException(e);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
             return true;
         }
@@ -65,10 +71,17 @@ public class WhitelistCommand implements CommandExecutor, TabCompleter {
             }
             // Remove the player
             try {
-                Runner.removePlayer(args[1]);
-                sender.sendMessage("Player removed.");
+                if (Runner.isPlayerWhitelisted(args[1])) {
+                    Runner.removePlayer(args[1]);
+                    sender.sendMessage("Player removed.");
+                } else
+                    sender.sendMessage("The player is not on the whitelist.");
             } catch (SQLException e) {
                 sender.sendMessage("Error removing player from : " + e.getMessage());
+            } catch (ExecutionException e) {
+                throw new RuntimeException(e);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
             return true;
         }

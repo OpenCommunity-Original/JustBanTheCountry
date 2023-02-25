@@ -13,26 +13,28 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.jetbrains.annotations.NotNull;
 import org.opencommunity.JustBanTheCountry.utils.SQLiteAPI;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Logger;
 
 public class Runner implements Listener {
     private Set<String> blacklistedCountries = new HashSet<>();
-    private final Configuration config;
     private static SQLiteAPI sqliteAPI;
+    private static final Logger logger = Logger.getLogger("JustBanTheCountry");
 
-    private Component kickMessage;
+    private final Component kickMessage;
 
     public Runner(Configuration config, SQLiteAPI sqliteAPI) {
-        this.config = config;
         Runner.sqliteAPI = sqliteAPI;
         this.kickMessage = GsonComponentSerializer.gson().deserialize(Objects.requireNonNull(config.getString("kick-message")));
         this.blacklistedCountries = new HashSet<>(config.getStringList("blacklisted-countries"));
     }
 
+    @SuppressWarnings("ConstantConditions")
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerLogin(AsyncPlayerPreLoginEvent event) {
         @NotNull String playerName = event.getName();
@@ -44,20 +46,23 @@ public class Runner implements Listener {
             }
             // Look up the player's country using the EssentialsX geoip module
             String country = getPlayerCountry(playerName);
+            // Check if the player is on the blacklist for trying to login from a blacklisted country
+            if (isPlayerBlacklisted(playerName)) {
+                // If the player is on the blacklist, kick the player with a message
+                event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, kickMessage);
+            }
             // Check if the player's country is blacklisted
-            if (blacklistedCountries.contains(country)) {
-                // Check if the player is on the blacklist for trying to login from a blacklisted country
-                if (isPlayerBlacklisted(playerName)) {
-                    // If the player is on the blacklist, kick the player with a message
-                    event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, kickMessage);
-                } else {
-                    // If the player is not on the blacklist, add them to the blacklist and kick them with a message
-                    addPlayerToBlacklist(playerName);
-                    event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, kickMessage);
-                }
+            else if (country != null && blacklistedCountries.contains(country)) {
+                // If the player is not on the blacklist, add them to the blacklist and kick them with a message
+                addPlayerToBlacklist(playerName);
+                event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, kickMessage);
             }
         } catch (SQLException e) {
-            Bukkit.getLogger().warning("Error checking whitelist and blacklist for player " + playerName + ": " + e.getMessage());
+            logger.warning("Error checking whitelist and blacklist for player " + playerName + ": " + e.getMessage());
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -68,40 +73,37 @@ public class Runner implements Listener {
         User user = essentials.getUser(player);
 
         String fullString = user.getGeoLocation();
-        String[] parts = fullString.split(",");
-
-        return parts[parts.length - 1].trim();
+        if (fullString != null) {
+            String[] parts = fullString.split(",");
+            return parts[parts.length - 1].trim();
+        } else {
+            logger.warning("Failed to get the region. Either the login is local or EssentialsX GeoIP is not configured.");
+            return null;
+        }
     }
 
     private void addPlayerToBlacklist(String name) throws SQLException {
-        sqliteAPI.executeUpdate("INSERT INTO blacklist (name) VALUES (?)", name).join();
+        sqliteAPI.executeUpdate("INSERT INTO blacklist (blacklist_name) VALUES (?)", name).join();
     }
 
     public static void addPlayer(String name) throws SQLException {
-        sqliteAPI.executeUpdate("INSERT INTO whitelist (name) VALUES (?)", name).join();
+        sqliteAPI.executeUpdate("INSERT INTO whitelist (whitelist_name) VALUES (?)", name).join();
     }
 
     public static void removePlayer(String name) throws SQLException {
-        sqliteAPI.executeUpdate("DELETE FROM whitelist WHERE name = ?", name).join();
+        sqliteAPI.executeUpdate("DELETE FROM whitelist WHERE whitelist_name = ?", name).join();
     }
 
-    public boolean isPlayerWhitelisted(String name) throws SQLException {
-        ResultSet resultSet = sqliteAPI.executeQuery("SELECT COUNT(*) FROM whitelist WHERE name = ?", name).join();
-        boolean isWhitelisted = false;
-        if (resultSet.next()) {
-            isWhitelisted = resultSet.getInt(1) > 0;
-        }
-        resultSet.close();
-        return isWhitelisted;
+    public static boolean isPlayerWhitelisted(String name) throws SQLException, ExecutionException, InterruptedException {
+        String query = "SELECT COUNT(*) FROM whitelist WHERE whitelist_name = ?";
+        CompletableFuture<Boolean> future = sqliteAPI.hasResult(query, name);
+        return future.get();
     }
 
-    public boolean isPlayerBlacklisted(String name) throws SQLException {
-        ResultSet resultSet = sqliteAPI.executeQuery("SELECT COUNT(*) FROM blacklist WHERE name = ?", name).join();
-        boolean isBlacklisted = false;
-        if (resultSet.next()) {
-            isBlacklisted = resultSet.getInt(1) > 0;
-        }
-        resultSet.close();
-        return isBlacklisted;
+    public static boolean isPlayerBlacklisted(String name) throws SQLException, ExecutionException, InterruptedException {
+        String query = "SELECT COUNT(*) FROM blacklist WHERE blacklist_name = ?";
+
+        CompletableFuture<Boolean> future = sqliteAPI.hasResult(query, name);
+        return future.get();
     }
 }

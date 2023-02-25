@@ -53,9 +53,9 @@ public class Main extends JavaPlugin {
 
     private CompletableFuture<Boolean> loadDatabase() {
         return api.connect().thenCompose(aVoid ->
-                api.executeUpdate("CREATE TABLE IF NOT EXISTS blacklist (name TEXT NOT NULL PRIMARY KEY)")
+                api.executeUpdate("CREATE TABLE IF NOT EXISTS blacklist (blacklist_name TEXT NOT NULL PRIMARY KEY)")
                         .thenCompose(blacklistResult ->
-                                api.executeUpdate("CREATE TABLE IF NOT EXISTS whitelist (name TEXT NOT NULL PRIMARY KEY)")
+                                api.executeUpdate("CREATE TABLE IF NOT EXISTS whitelist (whitelist_name TEXT NOT NULL PRIMARY KEY)")
                                         .thenApply(whitelistResult -> blacklistResult > 0 && whitelistResult > 0)));
     }
 }

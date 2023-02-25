@@ -1,10 +1,7 @@
 package org.opencommunity.JustBanTheCountry.utils;
 
 import java.io.File;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
 import java.util.concurrent.CompletableFuture;
 
 public class SQLiteAPI {
@@ -64,5 +61,23 @@ public class SQLiteAPI {
             }
         });
     }
+
+    public CompletableFuture<Boolean> hasResult(String query, String name) {
+        CompletableFuture<Boolean> future = new CompletableFuture<>();
+        Thread thread = new Thread(() -> {
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setString(1, name);
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    boolean match = resultSet.next() && resultSet.getInt(1) > 0;
+                    future.complete(match);
+                }
+            } catch (SQLException e) {
+                future.completeExceptionally(e);
+            }
+        });
+        thread.start();
+        return future;
+    }
+
 
 }
