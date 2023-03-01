@@ -110,7 +110,7 @@ public class WhitelistCommand implements CommandExecutor, TabCompleter {
         List<String> whitelist = new ArrayList<>();
         ResultSet resultSet = sqliteAPI.executeQuery("SELECT whitelist_name FROM whitelist").join();
         while (resultSet.next()) {
-            whitelist.add(resultSet.getString("name"));
+            whitelist.add(resultSet.getString("whitelist_name"));
         }
         return whitelist;
     }

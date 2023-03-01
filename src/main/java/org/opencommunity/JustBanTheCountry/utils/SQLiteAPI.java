@@ -36,15 +36,17 @@ public class SQLiteAPI {
 
     public CompletableFuture<ResultSet> executeQuery(String query, Object... parameters) {
         return CompletableFuture.supplyAsync(() -> {
-            try (PreparedStatement statement = connection.prepareStatement(query)) {
+            ResultSet resultSet = null;
+            try {
+                PreparedStatement stmt = connection.prepareStatement(query);
                 for (int i = 0; i < parameters.length; i++) {
-                    statement.setObject(i + 1, parameters[i]);
+                    stmt.setObject(i+1, parameters[i]);
                 }
-                return statement.executeQuery();
-            } catch (Exception e) {
+                resultSet = stmt.executeQuery();
+            } catch (SQLException e) {
                 e.printStackTrace();
-                return null;
             }
+            return resultSet;
         });
     }
 
