@@ -67,9 +67,11 @@ public class Runner implements Listener {
     private String getPlayerCountry(@NotNull String player) {
         // Look up the player's country using the EssentialsX geoip module
         Essentials essentials = (Essentials) Bukkit.getPluginManager().getPlugin("Essentials");
-        assert essentials != null;
         User user = essentials.getUser(player);
-
+        if (user == null) {
+            logger.warning("Failed to get the region. Bedrock user.");
+            return null;
+        }
         String fullString = user.getGeoLocation();
         if (fullString != null) {
             String[] parts = fullString.split(",");
