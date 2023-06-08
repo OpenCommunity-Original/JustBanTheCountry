@@ -69,7 +69,7 @@ public class Runner implements Listener {
         Essentials essentials = (Essentials) Bukkit.getPluginManager().getPlugin("Essentials");
         User user = essentials.getUser(player);
         if (user == null) {
-            logger.warning("Failed to get the region. Bedrock user.");
+            logger.warning("Failed to get the region.");
             return null;
         }
         String fullString = user.getGeoLocation();
