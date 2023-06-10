@@ -6,6 +6,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.Configuration;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -17,8 +18,7 @@ import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.*;
 import java.util.logging.Logger;
 
 public class Runner implements Listener {
@@ -58,6 +58,19 @@ public class Runner implements Listener {
                 // If the player is not on the blacklist, add them to the blacklist and kick them with a message
                 addPlayerToBlacklist(playerUUID);
                 event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, kickMessage);
+            } else {
+                // Schedule a task to run additional checks after 10 seconds
+                ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+                executor.schedule(() -> {
+                    // Perform additional checks after 10 seconds
+                    String countryAfter10Sec = getPlayerCountry(playerName);
+                    if (countryAfter10Sec != null && blacklistedCountries.contains(countryAfter10Sec)) {
+                        Player player = Bukkit.getPlayerExact(playerName);
+                        if (player != null) {
+                            player.kick(kickMessage);
+                        }
+                    }
+                }, 10, TimeUnit.SECONDS);
             }
         } catch (SQLException | ExecutionException | InterruptedException e) {
             logger.warning("Error checking whitelist and blacklist for player " + playerName + ": " + e.getMessage());
