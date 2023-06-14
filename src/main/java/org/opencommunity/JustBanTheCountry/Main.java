@@ -2,6 +2,7 @@ package org.opencommunity.JustBanTheCountry;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.Configuration;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.opencommunity.JustBanTheCountry.commands.WhitelistCommand;
 import org.opencommunity.JustBanTheCountry.functions.Runner;
@@ -22,7 +23,7 @@ public class Main extends JavaPlugin {
         // Save the default config file if it doesn't already exist and reload the latest version
         saveAndReloadConfig();
         // Initialize and register the event listeners
-        initializeEventListeners();
+        initializeEventListeners(this);
         // Initialize the database
         loadDatabase();
         // Initialize the chat command and register it with Bukkit
@@ -40,10 +41,10 @@ public class Main extends JavaPlugin {
         config = getConfig();
     }
 
-    private void initializeEventListeners() {
+    private void initializeEventListeners(Plugin plugin) {
         whitelistCommand = new WhitelistCommand(config, api);
-        Runner runner = new Runner(config, api);
-        Bukkit.getPluginManager().registerEvents(runner, this);
+        Runner runner = new Runner(config, api, plugin);
+        Bukkit.getPluginManager().registerEvents(runner, plugin);
     }
 
     private void initializeChatCommand() {

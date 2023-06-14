@@ -11,6 +11,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.opencommunity.JustBanTheCountry.utils.SQLiteAPI;
 
@@ -24,11 +25,13 @@ import java.util.logging.Logger;
 public class Runner implements Listener {
     private final Set<String> blacklistedCountries;
     private static SQLiteAPI sqliteAPI;
+    private static Plugin plugin;
     private static final Logger logger = Logger.getLogger("JustBanTheCountry");
 
     private final Component kickMessage;
 
-    public Runner(Configuration config, SQLiteAPI sqliteAPI) {
+    public Runner(Configuration config, SQLiteAPI sqliteAPI, Plugin plugin) {
+        this.plugin = plugin;
         Runner.sqliteAPI = sqliteAPI;
         this.kickMessage = GsonComponentSerializer.gson().deserialize(Objects.requireNonNull(config.getString("kick-message")));
         this.blacklistedCountries = new HashSet<>(config.getStringList("blacklisted-countries"));
@@ -60,8 +63,7 @@ public class Runner implements Listener {
                 event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, kickMessage);
             } else {
                 // Schedule a task to run additional checks after 10 seconds
-                ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-                executor.schedule(() -> {
+                Bukkit.getScheduler().runTaskLater(plugin, () -> {
                     // Perform additional checks after 10 seconds
                     String countryAfter10Sec = getPlayerCountry(playerName);
                     if (countryAfter10Sec != null && blacklistedCountries.contains(countryAfter10Sec)) {
@@ -70,12 +72,13 @@ public class Runner implements Listener {
                             player.kick(kickMessage);
                         }
                     }
-                }, 10, TimeUnit.SECONDS);
+                }, 200); // 10 seconds = 10 ticks (1 second = 20 ticks)
             }
         } catch (SQLException | ExecutionException | InterruptedException e) {
             logger.warning("Error checking whitelist and blacklist for player " + playerName + ": " + e.getMessage());
         }
     }
+
 
     private String getPlayerCountry(@NotNull String player) {
         // Look up the player's country using the EssentialsX geoip module
